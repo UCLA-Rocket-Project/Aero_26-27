@@ -68,7 +68,7 @@ Fa_nc = mass_nc*(a+g);           % [N]
 Fa_total = mass_total*(a+g);     % [N]
 
 % print values
-fprintf("Spike mass: %.3f kg(%.3f lbs) *not including anchor/connector\n", mass_spk, mass_spk*2.20462);
-fprintf("Nose cone mass: %.3f kg (%.3f lbs) *not including thickened\n", mass_nc, mass_nc*2.20462);
-fprintf("Total mass: %.3f kg (%.3f lbs)\n", mass_total, mass_total*2.20462);
+fprintf("Spike mass: %.3f kg(%.3f lbm) *not including anchor/connector\n", mass_spk, mass_spk*2.20462);
+fprintf("Nose cone mass: %.3f kg (%.3f lbm) *not including thickened\n", mass_nc, mass_nc*2.20462);
+fprintf("Total mass: %.3f kg (%.3f lbm)\n", mass_total, mass_total*2.20462);
 fprintf("Aplied upward force:%.3f N (%.3f pound-force)\n", Fa_total, Fa_total*0.224809);
