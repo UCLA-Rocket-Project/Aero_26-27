@@ -117,6 +117,8 @@ idx_in_range = find(in_range);
 gap_after = [find(diff(idx_in_range) > 1); numel(idx_in_range)];
 seg_start = 1;
 segment_impulses = zeros(numel(gap_after), 1);
+segment_energy   = zeros(numel(gap_after), 1);
+segment_distance = zeros(numel(gap_after), 1);
 segment_t_start  = zeros(numel(gap_after), 1);
 segment_t_end    = zeros(numel(gap_after), 1);
 
@@ -126,20 +128,26 @@ for k = 1:numel(gap_after)
     segment_t_end(k)   = time(seg_idx(end));
     if numel(seg_idx) >= 2
         segment_impulses(k) = trapz(time(seg_idx), drag_force(seg_idx));
-    else
-        segment_impulses(k) = 0;   % can't integrate a single point
+        % work done by drag = integral of F_d * v dt (drag acts along the
+        % velocity vector, so total velocity gives the path-length work)
+        segment_energy(k)   = trapz(time(seg_idx), drag_force(seg_idx) .* velocity(seg_idx));
+        segment_distance(k) = trapz(time(seg_idx), velocity(seg_idx));
     end
     seg_start = gap_after(k) + 1;
 end
 
 drag_impulse_total = sum(segment_impulses);   % [N*s]
+drag_energy_total  = sum(segment_energy);     % [J]
+distance_total     = sum(segment_distance);   % [m]
 
 fprintf('\nDrag impulse within Mach [%.3f, %.3f]: %.4f N*s\n', mach_min, mach_max, drag_impulse_total);
+fprintf('Energy lost to drag within Mach [%.3f, %.3f]: %.4f J (over %.2f m of travel)\n', ...
+    mach_min, mach_max, drag_energy_total, distance_total);
 if numel(segment_impulses) > 1
     fprintf('  (split across %d segments where flight re-entered the CFD Mach range)\n', numel(segment_impulses));
     for k = 1:numel(segment_impulses)
-        fprintf('    segment %d: t = %.3f - %.3f s, impulse = %.4f N*s\n', ...
-            k, segment_t_start(k), segment_t_end(k), segment_impulses(k));
+        fprintf('    segment %d: t = %.3f - %.3f s, impulse = %.4f N*s, energy = %.4f J\n', ...
+            k, segment_t_start(k), segment_t_end(k), segment_impulses(k), segment_energy(k));
     end
 end
 
@@ -147,4 +155,4 @@ end
 
 results = table(time_v, mach_v, cd_v, rho_v, velocity_v, drag_v, ...
     'VariableNames', {'time_s', 'mach', 'Cd', 'rho_kgm3', 'velocity_ms', 'drag_N'});
-% writetable(results, 'drag_results.csv');   % uncomment to save
+ writetable(results, 'drag_results.csv');  
